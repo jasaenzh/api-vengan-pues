@@ -1,7 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { dbConnect } from "@/utils/mongose";
-import Apartamento from "@/models/Apartamento";
-import getPagination from "@/libs/getPagination";
+import { dbConnect } from "@/utils/mongoose"
+import { getApartamentos } from "@/controllers/apartamentos";
 
 dbConnect();
 
@@ -11,7 +10,8 @@ export default (req: NextApiRequest, res: NextApiResponse) => {
 
   switch (method) {
     case "GET":
-      return res.status(200).json("Obteniendo apartamentos");
+      getApartamentos(req, res);
+      break;
 
     case "POST":
       return res.status(200).json("Creando apartamento");

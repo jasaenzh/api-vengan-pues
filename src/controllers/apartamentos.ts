@@ -9,40 +9,46 @@ interface QueryParams {
   numeroApartamento?: string | string[];
 }
 
+type Condicion = { numeroApartamento?: string } | { numeroApartamento: { $regex: RegExp; $options: string } };
+
 // Obtener Apartamentos
-export const getApartamentos = async (
-  req: NextApiRequest,
-  res: NextApiResponse
-) => {
+export const getApartamentos = async (req: NextApiRequest, res: NextApiResponse) => {
   const { size, page, numeroApartamento } = req.query as QueryParams;
 
   try {
-    const condicion = numeroApartamento
+
+    const condicion: Condicion = numeroApartamento
       ? {
-          numeroApartamento: {
-            $regex: new RegExp(numeroApartamento as string),
-            $options: "i",
-          },
-        }
+        numeroApartamento: {
+          $regex: new RegExp(numeroApartamento as string),
+          $options: "i",
+        },
+      }
       : {};
 
-    const pageAsNumber =
-      typeof page === "string" ? parseInt(page, 10) : undefined;
-    const sizeAsNumber =
-      typeof size === "string" ? parseInt(size, 10) : undefined;
+
+    const pageAsNumber = typeof page === "string" ? parseInt(page, 10) : undefined;
+    const sizeAsNumber = typeof size === "string" ? parseInt(size, 10) : undefined;
+
 
     const { limit, offset } = getPagination(pageAsNumber, sizeAsNumber);
 
-    const obtenerApartamentos = await Apartamento.paginate(condicion, {
+    const opciones = {
+      query: condicion,
       offset: offset,
       limit: limit,
-    });
-    res.status(200).json(obtenerApartamentos);
+    };
+
+    const obtenerApartamentos = await Apartamento.paginate(opciones);
+
+    return res.status(200).json(obtenerApartamentos);
+
   } catch (error: unknown) {
+
     if (error instanceof Error) {
-      res.status(500).json({ message: error.message });
+      return res.status(500).json({ message: error.message });
     } else {
-      res.status(500).json({ message: "Error desconocido" });
+      return res.status(500).json({ message: "Error desconocido" });
     }
   }
 };
