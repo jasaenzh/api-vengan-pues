@@ -18,7 +18,7 @@ export async function dbConnect() {
 
     await mongoose.connect(process.env.MONGODB_URI);
     conn.isConnected = true;
-    console.log(`Conectado DB: ${mongoose.connection.db.databaseName}`);
+    console.log(`Conectado a la base de datos: ${mongoose.connection.db.databaseName}`);
 
   } catch (error) {
     console.log(error);

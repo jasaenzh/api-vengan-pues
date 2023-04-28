@@ -225,8 +225,7 @@ const apartamentoSchema = new Schema({
 
 apartamentoSchema.plugin(mongoosePagination);
 
-// const Apartamento: Pagination<IApartamento> = mongoose.model<IApartamento, Pagination<IApartamento>>("Apartamento", apartamentoSchema);
+const Apartamento: Pagination<IApartamento> = (models.Apartamento as Pagination<IApartamento>) || mongoose.models.Apartamento || mongoose.model<IApartamento, Pagination<IApartamento>>("Apartamento", apartamentoSchema);
 
-const Apartamento: Pagination<IApartamento> = (models.Apartamento as Pagination<IApartamento>) || mongoose.model<IApartamento, Pagination<IApartamento>>("Apartamento", apartamentoSchema);
 
 export default Apartamento;
