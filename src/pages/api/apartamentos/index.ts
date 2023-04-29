@@ -1,59 +1,22 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { dbConnect } from "@/utils/mongoose"
-import Apartamento from "@/models/Apartamento";
-import getPagination from "@/libs/getPagination";
+import Apartamento, { IApartamento } from "@/models/Apartamento";
+import { HydratedDocument } from 'mongoose';
+
 
 dbConnect();
-
-interface QueryParams {
-  size?: string | string[];
-  page?: string | string[];
-  numeroApartamento?: string | string[];
-}
-
-type Condicion = { numeroApartamento?: string } | { numeroApartamento: { $regex: RegExp; $options: string } };
-
-interface PaginationOptions {
-  page?: number;
-  limit?: number;
-  query?: Condicion;
-}
-
 
 // eslint-disable-next-line import/no-anonymous-default-export
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   const { method, body } = req;
-  const { size, page, numeroApartamento } = req.query as QueryParams;
 
   switch (method) {
-    // Metodo GET
+
+    // Metodo GET - Trae todos los apartamentos
     case "GET":
       try {
-
-        const condicion: Condicion = numeroApartamento
-          ? {
-            numeroApartamento: {
-              $regex: new RegExp(numeroApartamento as string),
-              $options: "i",
-            },
-          }
-          : {};
-
-        const pageAsNumber = typeof page === "string" ? parseInt(page, 10) : undefined;
-        const sizeAsNumber = typeof size === "string" ? parseInt(size, 10) : undefined;
-
-        getPagination(pageAsNumber, sizeAsNumber);
-
-        const paginationOptions: PaginationOptions = {
-          page: pageAsNumber,
-          limit: sizeAsNumber,
-          query: condicion
-        }
-
-        const getApartamentos = await Apartamento.paginate(paginationOptions);
-
+        const getApartamentos = await Apartamento.find();
         return res.status(200).json(getApartamentos)
-
       } catch (error) {
         if (error instanceof Error) {
           return res.status(500).json({ message: error.message });
@@ -62,11 +25,10 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         }
       }
 
-    // Metodo POST
+    // Metodo POST - Crea el apartamento
     case "POST":
-
       try {
-        const newApartamento = new Apartamento(body)
+        const newApartamento: HydratedDocument<IApartamento> = new Apartamento(body)
         const saveApartamento = await newApartamento.save();
         return res.status(201).json(saveApartamento)
       } catch (error) {

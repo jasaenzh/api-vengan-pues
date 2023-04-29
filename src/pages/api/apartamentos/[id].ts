@@ -13,7 +13,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     case "GET":
       try {
         const getApartamentoById = await Apartamento.findById(id);
-        const msgApartamentoNoEncontrado = `Apartamento ${getApartamentoById?.numeroApartamento} no encontrado`
+        const msgApartamentoNoEncontrado = `Apartamento no encontrado`
         if (!getApartamentoById) return res.status(404).json({ msg: msgApartamentoNoEncontrado })
         return res.status(200).json(getApartamentoById)
       } catch (error) {

@@ -1,62 +1,22 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { dbConnect } from "@/utils/mongoose"
-import Reserva from "@/models/Reserva";
-import getPagination from "@/libs/getPagination";
+import Reserva, { IReserva } from "@/models/Reserva";
 import shortid from 'shortid'
 import Apartamento from "@/models/Apartamento";
-
+import { HydratedDocument } from 'mongoose';
 
 dbConnect();
-
-interface QueryParams {
-  size?: string | string[];
-  page?: string | string[];
-  codigo_reserva?: string | string[];
-}
-
-type Condicion = { codigo_reserva?: string } | { codigo_reserva: { $regex: RegExp; $options: string } };
-
-interface PaginationOptions {
-  page?: number;
-  limit?: number;
-  query?: Condicion;
-}
-
-
 
 // eslint-disable-next-line import/no-anonymous-default-export
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   const { method, body } = req;
-  const { size, page, codigo_reserva } = req.query as QueryParams;
 
   switch (method) {
     // Metodo GET
     case "GET":
       try {
-        const condicion: Condicion = codigo_reserva
-          ? {
-            codigo_reserva: {
-              $regex: new RegExp(codigo_reserva as string),
-              $options: "i",
-            },
-          }
-          : {};
-
-        const pageAsNumber = typeof page === "string" ? parseInt(page, 10) : undefined;
-        const sizeAsNumber = typeof size === "string" ? parseInt(size, 10) : undefined;
-
-
-        getPagination(pageAsNumber, sizeAsNumber);
-
-        const paginationOptions: PaginationOptions = {
-          page: pageAsNumber,
-          limit: sizeAsNumber,
-          query: condicion
-        }
-
-        const getReservas = await Reserva.paginate(paginationOptions);
+        const getReservas = await Reserva.find();
         return res.status(200).json(getReservas);
-
       } catch (error) {
         if (error instanceof Error) {
           return res.status(500).json({ message: error.message });
@@ -64,7 +24,6 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           return res.status(500).json({ message: "Error desconocido" });
         }
       }
-
 
     // Metodo POST
     case "POST":
@@ -88,7 +47,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         // Aca se crea el codigo de reserva aleatorio (shortid)
         const codigo_reserva = shortid.generate();
 
-        const newReserva = new Reserva({
+        const newReserva: HydratedDocument<IReserva> = new Reserva({
           apartamento: apartamento,
           codigo_reserva: codigo_reserva,
           fecha_inicio: fecha_inicio,

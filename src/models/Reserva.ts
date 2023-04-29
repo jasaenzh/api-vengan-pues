@@ -1,7 +1,6 @@
-import mongoose, { Document, Model, model, models, Schema, Types, } from "mongoose";
-import { mongoosePagination, Pagination } from "mongoose-paginate-ts";
+import mongoose, { Schema, Model, Types } from 'mongoose';
 
-type IAReseva = mongoose.Document & {
+export interface IReserva {
   apartamento: Types.ObjectId;
   codigo_reserva: string;
   fecha_inicio: Date;
@@ -9,37 +8,38 @@ type IAReseva = mongoose.Document & {
   estado: "pendiente" | "confirmada" | "cancelada";
 }
 
-const reservaSchema = new Schema<IAReseva>({
-  apartamento: {
-    type: Schema.Types.ObjectId,
-    ref: "Apartamento",
-    required: true
+const reservaSchema = new Schema<IReserva>(
+  {
+    apartamento: {
+      type: Schema.Types.ObjectId,
+      ref: "Apartamento",
+      required: true
+    },
+    codigo_reserva: {
+      type: String,
+      trim: true,
+      required: false
+    },
+    fecha_inicio: {
+      type: Date,
+      required: true,
+    },
+    fecha_fin: {
+      type: Date,
+      required: true,
+    },
+    estado: {
+      type: String,
+      enum: ["pendiente", "confirmada", "cancelada"],
+      default: "pendiente"
+    }
   },
-  codigo_reserva: {
-    type: String,
-    trim: true,
-    required: false
-  },
-  fecha_inicio: {
-    type: Date,
-    required: true,
-  },
-  fecha_fin: {
-    type: Date,
-    required: true,
-  },
-  estado: {
-    type: String,
-    enum: ["pendiente", "confirmada", "cancelada"],
-    default: "pendiente"
+  {
+    versionKey: false,
+    timestamps: { createdAt: true, updatedAt: true },
   }
-}, {
-  versionKey: false,
-  timestamps: { createdAt: true, updatedAt: true },
-}
 )
 
-reservaSchema.plugin(mongoosePagination);
 
 reservaSchema.set('toJSON', {
   transform: function (_doc, ret, _options) {
@@ -49,6 +49,14 @@ reservaSchema.set('toJSON', {
   },
 });
 
-const Reserva: Pagination<IAReseva> = (models.Reserva as Pagination<IAReseva>) || mongoose.models.Reserva || mongoose.model<IAReseva, Pagination<IAReseva>>("Reserva", reservaSchema)
+// 3. Creo el Modelo.
+let Reserva: Model<IReserva>;
+
+try {
+  Reserva = mongoose.model('Reserva')
+} catch (error) {
+  Reserva = mongoose.model('Reserva', reservaSchema);
+}
+
 
 export default Reserva;
