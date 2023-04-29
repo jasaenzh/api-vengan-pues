@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios, { AxiosResponse, AxiosError } from 'axios';
-import { error } from 'console';
+import { useRouter } from 'next/router';
+
 
 function LoginPage() {
 
@@ -10,7 +11,7 @@ function LoginPage() {
     password: ''
   })
 
-
+  const router = useRouter()
 
   // Funcion que captura los valores del input
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
@@ -31,15 +32,11 @@ function LoginPage() {
   // Funcion para enviar los datos a la BD (prevent default detiene el comportamiento del form)
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    console.log(credenciales);
-    await axios.post<Login>('/api/auth/login', credenciales)
-      .then((response: AxiosResponse<Login>) => {
-        const res = response.data
-        console.log(res);
-      })
-      .catch((error: AxiosError) => {
-        console.log(error.message);
-      })
+    const response = await axios.post<Login>('/api/auth/login', credenciales)
+
+    if (response.status === 200) {
+      router.push('/dashboard')
+    }
 
   }
 

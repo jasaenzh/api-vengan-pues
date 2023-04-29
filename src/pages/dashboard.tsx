@@ -1,4 +1,5 @@
 import axios, { AxiosError, AxiosResponse } from "axios";
+import { useRouter } from "next/router";
 import { useState } from "react";
 
 
@@ -8,6 +9,8 @@ function Dashboard() {
     email: "",
     username: "",
   })
+
+  const router = useRouter()
 
   interface Profile {
     email: string,
@@ -20,8 +23,13 @@ function Dashboard() {
   }
 
   const logout = async () => {
-    const response = await axios.post<Profile>('/api/profile')
-    setUser(response.data)
+    try {
+      await axios.post<Profile>('/api/auth/logout')
+      router.push("/login")
+    } catch (error) {
+      console.log(error);
+      router.push("/login")
+    }
   }
 
   return (
@@ -31,7 +39,7 @@ function Dashboard() {
         {JSON.stringify(user, null, 2)}
       </pre>
       <button onClick={() => getProfile()}>Obtener perfil</button>
-      <button onClick={logout}>Cerrar sesion</button>
+      <button onClick={() => logout()}>Cerrar sesion</button>
     </div>
   )
 }
