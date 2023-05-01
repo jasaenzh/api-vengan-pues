@@ -14,7 +14,6 @@ export default function profileHandler(req: NextApiRequest, res: NextApiResponse
       return res.status(400).json({ message: 'Cookie no válida' });
     }
     const user: string | JwtPayload = verify(myTokenName, 'secret');
-    console.log(user);
 
     if (typeof user === 'string') {
       // user es una cadena
